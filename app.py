@@ -256,4 +256,4 @@ if __name__ == '__main__':
     print("🔒 Seguridad habilitada: TLS/HTTPS + Cifrado de datos")
     print("📱 Accede a: https://localhost:5000")
     
-    app.run(host='0.0.0.0', port=5000, ssl_context=context, debug=False)
+    app.run(host='0.0.0.0', port=5000, ssl_context=context, debug=False) 

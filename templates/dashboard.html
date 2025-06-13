@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Clínica Mente Saludable</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .navbar-user {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 15px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab:not(.active):hover {
+            background: #f8f9fa;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .close {
+            font-size: 2rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+            font-size: 2rem;
+            color: #667eea;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .security-badge {
+            background: #e8f4fd;
+            color: #0066cc;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .navbar {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-brain"></i>
+            <span>Mente Saludable</span>
+        </div>
+        <div class="navbar-user">
+            <div class="user-info">
+                <div class="user-name" id="userName">Dr. Usuario</div>
+                <div class="user-role" id="userRole">Terapeuta</div>
+            </div>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Cerrar Sesión
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Panel de Control</h1>
+            <p class="dashboard-subtitle">Gestiona tus pacientes y notas clínicas de forma segura</p>
+            <div class="security-badge">
+                <i class="fas fa-shield-alt"></i>
+                Conexión HTTPS/TLS - Datos Cifrados
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #667eea;">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-number" id="totalPacientes">0</div>
+                <div class="stat-label">Pacientes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #27ae60;">
+                    <i class="fas fa-notes-medical"></i>
+                </div>
+                <div class="stat-number" id="totalNotas">0</div>
+                <div class="stat-label">Notas Clínicas</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="color: #f39c12;">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-number" id="sesionesMes">0</div>
+                <div class="stat-label">Sesiones este Mes</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('pacientes')">
+                <i class="fas fa-users"></i> Pacientes
+            </div>
+            <div class="tab" onclick="showTab('notas')">
+                <i class="fas fa-notes-medical"></i> Notas Clínicas
+            </div>
+        </div>
+
+        <!-- Sección de Pacientes -->
+        <div id="pacientes-section" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Gestión de Pacientes</h2>
+                <button class="btn" onclick="openModal('paciente')">
+                    <i class="fas fa-plus"></i> Nuevo Paciente
+                </button>
+            </div>
+            <div id="pacientes-content">
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Cargando pacientes...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Notas Clínicas -->
+        <div id="notas-section" class="content-section" style="display: none;">
+            <div class="section-header">
+                <h2 class="section-title">Notas Clínicas</h2>
+                <button class="btn" onclick="openModal('nota')">
+                    <i class="fas fa-plus"></i> Nueva Nota
+                </button>
+            </div>
+            <div id="notas-content">
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Cargando notas...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Pacientes -->
+    <div id="pacienteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nuevo Paciente</h3>
+                <span class="close" onclick="closeModal('paciente')">&times;</span>
+            </div>
+            <form id="pacienteForm">
+                <div class="form-group">
+                    <label for="nombre_completo">Nombre Completo *</label>
+                    <input type="text" id="nombre_completo" required>
+                </div>
+                <div class="form-group">
+                    <label for="fecha_nacimiento">Fecha de Nacimiento *</label>
+                    <input type="date" id="fecha_nacimiento" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefono">Teléfono</label>
+                    <input type="tel" id="telefono">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email">
+                </div>
+                <div class="form-group">
+                    <label for="direccion">Dirección</label>
+                    <input type="text" id="direccion">
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('paciente')">Cancelar</button>
+                    <button type="submit" class="btn">Guardar Paciente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Notas Clínicas -->
+    <div id="notaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nueva Nota Clínica</h3>
+                <span class="close" onclick="closeModal('nota')">&times;</span>
+            </div>
+            <form id="notaForm">
+                <div class="form-group">
+                    <label for="paciente_id">Paciente *</label>
+                    <select id="paciente_id" required>
+                        <option value="">Selecciona un paciente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="titulo">Título de la Sesión *</label>
+                    <input type="text" id="titulo" required>
+                </div>
+                <div class="form-group">
+                    <label for="fecha_sesion">Fecha de la Sesión *</label>
+                    <input type="date" id="fecha_sesion" required>
+                </div>
+                <div class="form-group">
+                    <label for="cuerpo">Notas Clínicas *</label>
+                    <textarea id="cuerpo" placeholder="Escribe aquí las observaciones, diagnósticos y notas de la sesión..." required></textarea>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('nota')">Cancelar</button>
+                    <button type="submit" class="btn">Guardar Nota</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para Ver Nota -->
+    <div id="verNotaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Nota Clínica</h3>
+                <span class="close" onclick="closeModal('verNota')">&times;</span>
+            </div>
+            <div id="notaDetalle">
+                <!-- Contenido de la nota se cargará aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'pacientes';
+        let pacientes = [];
+        let notas = [];
+
+        // Cargar datos iniciales
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPacientes();
+            loadNotas();
+            updateStats();
+        });
+
+        function showTab(tabName) {
+            currentTab = tabName;
+            
+            // Actualizar tabs
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Mostrar sección correspondiente
+            document.getElementById('pacientes-section').style.display = tabName === 'pacientes' ? 'block' : 'none';
+            document.getElementById('notas-section').style.display = tabName === 'notas' ? 'block' : 'none';
+        }
+
+        async function loadPacientes() {
+            try {
+                const response = await fetch('/api/pacientes');
+                const data = await response.json();
+                pacientes = data.pacientes;
+                renderPacientes();
+                updateStats();
+            } catch (error) {
+                console.error('Error cargando pacientes:', error);
+            }
+        }
+
+        async function loadNotas() {
+            try {
+                const response = await fetch('/api/notas');
+                const data = await response.json();
+                notas = data.notas;
+                renderNotas();
+                updateStats();
+            } catch (error) {
+                console.error('Error cargando notas:', error);
+            }
+        }
+
+        function renderPacientes() {
+            const content = document.getElementById('pacientes-content');
+            
+            if (pacientes.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h3>No hay pacientes registrados</h3>
+                        <p>Comienza agregando tu primer paciente</p>
+                    </div>
+                `;
+                return;
+            }
+
+            content.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Fecha de Nacimiento</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Fecha de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pacientes.map(paciente => `
+                            <tr>
+                                <td>${paciente.nombre_completo}</td>
+                                <td>${paciente.fecha_nacimiento}</td>
+                                <td>${paciente.telefono || '-'}</td>
+                                <td>${paciente.email || '-'}</td>
+                                <td>${paciente.fecha_registro}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderNotas() {
+            const content = document.getElementById('notas-content');
+            
+            if (notas.length === 0) {
+                content.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-notes-medical"></i>
+                        <h3>No hay notas clínicas</h3>
+                        <p>Comienza creando tu primera nota clínica</p>
+                    </div>
+                `;
+                return;
+            }
+
+            content.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Paciente</th>
+                            <th>Fecha de Sesión</th>
+                            <th>Fecha de Creación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${notas.map(nota => `
+                            <tr>
+                                <td>${nota.titulo}</td>
+                                <td>${nota.paciente_nombre}</td>
+                                <td>${nota.fecha_sesion}</td>
+                                <td>${nota.fecha_creacion}</td>
+                                <td>
+                                    <button class="btn btn-secondary" onclick="verNota(${nota.id})">
+                                        <i class="fas fa-eye"></i> Ver
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function updateStats() {
+            document.getElementById('totalPacientes').textContent = pacientes.length;
+            document.getElementById('totalNotas').textContent = notas.length;
+            
+            // Calcular sesiones del mes actual
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const sesionesMes = notas.filter(nota => {
+                const fecha = new Date(nota.fecha_sesion);
+                return fecha.getMonth() === currentMonth && fecha.getFullYear() === currentYear;
+            }).length;
+            
+            document.getElementById('sesionesMes').textContent = sesionesMes;
+        }
+
+        function openModal(type) {
+            if (type === 'nota') {
+                // Cargar lista de pacientes en el select
+                const select = document.getElementById('paciente_id');
+                select.innerHTML = '<option value="">Selecciona un paciente</option>';
+                pacientes.forEach(paciente => {
+                    select.innerHTML += `<option value="${paciente.id}">${paciente.nombre_completo}</option>`;
+                });
+            }
+            
+            document.getElementById(type + 'Modal').style.display = 'block';
+        }
+
+        function closeModal(type) {
+            document.getElementById(type + 'Modal').style.display = 'none';
+            if (type === 'paciente' || type === 'nota') {
+                document.getElementById(type + 'Form').reset();
+            }
+        }
+
+        async function verNota(notaId) {
+            try {
+                const response = await fetch(`/api/notas/${notaId}`);
+                const nota = await response.json();
+                
+                document.getElementById('notaDetalle').innerHTML = `
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Paciente:</strong> ${nota.paciente_nombre}
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Fecha de Sesión:</strong> ${nota.fecha_sesion}
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Título:</strong> ${nota.titulo}
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Notas Clínicas:</strong>
+                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 0.5rem; white-space: pre-wrap;">
+                            ${nota.cuerpo}
+                        </div>
+                    </div>
+                    <div style="color: #666; font-size: 0.9rem;">
+                        <strong>Creada:</strong> ${nota.fecha_creacion}
+                    </div>
+                `;
+                
+                openModal('verNota');
+            } catch (error) {
+                console.error('Error cargando nota:', error);
+            }
+        }
+
+        // Event listeners para formularios
+        document.getElementById('pacienteForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                nombre_completo: document.getElementById('nombre_completo').value,
+                fecha_nacimiento: document.getElementById('fecha_nacimiento').value,
+                telefono: document.getElementById('telefono').value,
+                email: document.getElementById('email').value,
+                direccion: document.getElementById('direccion').value
+            };
+            
+            try {
+                const response = await fetch('/api/pacientes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeModal('paciente');
+                    loadPacientes();
+                } else {
+                    alert('Error al crear paciente: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error de conexión');
+            }
+        });
+
+        document.getElementById('notaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                paciente_id: parseInt(document.getElementById('paciente_id').value),
+                titulo: document.getElementById('titulo').value,
+                fecha_sesion: document.getElementById('fecha_sesion').value,
+                cuerpo: document.getElementById('cuerpo').value
+            };
+            
+            try {
+                const response = await fetch('/api/notas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    closeModal('nota');
+                    loadNotas();
+                } else {
+                    alert('Error al crear nota: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error de conexión');
+            }
+        });
+
+        // Cerrar modales al hacer clic fuera
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html> 

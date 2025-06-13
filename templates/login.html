@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clínica Mente Saludable - Iniciar Sesión</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .logo {
+            margin-bottom: 30px;
+        }
+
+        .logo i {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .logo h1 {
+            color: #333;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .security-info {
+            background: #e8f4fd;
+            border: 1px solid #b3d9ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .security-info h4 {
+            color: #0066cc;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .security-info ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .security-info li {
+            color: #555;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .security-info li:before {
+            content: "🔒";
+            position: absolute;
+            left: 0;
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            color: #d63031;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .register-link {
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <i class="fas fa-brain"></i>
+            <h1>Mente Saludable</h1>
+            <p>Sistema de Gestión Clínica</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Usuario</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit" class="btn" id="loginBtn">
+                <span class="btn-text">Iniciar Sesión</span>
+                <span class="loading"><i class="fas fa-spinner"></i></span>
+            </button>
+        </form>
+
+        <div class="register-link">
+            ¿No tienes cuenta? <a href="/register">Regístrate aquí</a>
+        </div>
+
+        <div class="security-info">
+            <h4><i class="fas fa-shield-alt"></i> Seguridad Garantizada</h4>
+            <ul>
+                <li>Conexión HTTPS/TLS encriptada</li>
+                <li>Datos clínicos cifrados en reposo</li>
+                <li>Autenticación segura de usuarios</li>
+                <li>Protección contra ataques de sniffing</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('loginBtn');
+            const btnText = btn.querySelector('.btn-text');
+            const loading = btn.querySelector('.loading');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Mostrar loading
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            loading.style.display = 'inline-block';
+            errorMessage.style.display = 'none';
+            
+            const formData = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
+            
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    errorMessage.textContent = data.error;
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Error de conexión. Verifica tu conexión a internet.';
+                errorMessage.style.display = 'block';
+            } finally {
+                // Ocultar loading
+                btn.disabled = false;
+                btnText.style.display = 'inline-block';
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html> 

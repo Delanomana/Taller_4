@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Detalles del Pedido</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .detalle {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .producto {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .btn-procesar {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-desprocesar {
+            background-color: #ff9800;
+            color: white;
+        }
+        .btn-cancelar {
+            background-color: #f44336;
+            color: white;
+        }
+        .stock-bajo {
+            color: red;
+        }
+        .procesado {
+            text-decoration: line-through;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>Detalles del Pedido</h1>
+    <div id="info"></div>
+    <div id="detalles"></div>
+    <button class="btn btn-cancelar" onclick="cancelarPedido()">Cancelar Pedido</button>
+    <script>
+        // Obtener el ID del pedido desde la URL tipo /pedido/1
+        function getPedidoId() {
+            const path = window.location.pathname;
+            const match = path.match(/\/pedido\/(\d+)/);
+            return match ? match[1] : null;
+        }
+        const pedidoId = getPedidoId();
+
+        function cargarDetalles() {
+            fetch(`http://localhost:5000/pedidos/${pedidoId}/detalles`)
+                .then(response => response.json())
+                .then(data => {
+                    let html = '<h3>Productos solicitados:</h3>';
+                    data.detalles.forEach(detalle => {
+                        const stockClass = detalle.stock_disponible < 10 ? 'stock-bajo' : '';
+                        const procesadoClass = detalle.procesado ? 'procesado' : '';
+                        html += `
+                            <div class="producto ${procesadoClass}">
+                                <span>${detalle.producto} <b>x${detalle.cantidad}</b></span>
+                                <span class="${stockClass}">Stock: ${detalle.stock_disponible}</span>
+                                <button class="btn ${detalle.procesado ? 'btn-desprocesar' : 'btn-procesar'}"
+                                        onclick="procesarProducto(${detalle.id}, ${!detalle.procesado})">
+                                    ${detalle.procesado ? 'Desprocesar' : 'Procesar'}
+                                </button>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('detalles').innerHTML = html;
+                });
+        }
+
+        function cargarInfo() {
+            fetch('http://localhost:5000/pedidos')
+                .then(response => response.json())
+                .then(pedidos => {
+                    const pedido = pedidos.find(p => p.id == pedidoId);
+                    if (pedido) {
+                        document.getElementById('info').innerHTML = `
+                            <div class="detalle">
+                                <h2>Pedido #${pedido.id}</h2>
+                                <p>Fecha: ${pedido.fecha_emision}</p>
+                                <p><b>Cantidad total de productos:</b> ${pedido.total_cantidad}</p>
+                            </div>
+                        `;
+                    }
+                });
+        }
+
+        function procesarProducto(detalleId, procesar) {
+            fetch(`http://localhost:5000/pedidos/${pedidoId}/procesar`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    pedido_id: pedidoId,
+                    detalle_id: detalleId,
+                    procesar: procesar
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.mensaje);
+                cargarDetalles();
+            })
+            .catch(error => {
+                alert('Error al procesar el producto');
+            });
+        }
+
+        function cancelarPedido() {
+            if (!confirm('¿Está seguro de cancelar este pedido?')) {
+                return;
+            }
+            fetch(`http://localhost:5000/pedidos/${pedidoId}/cancelar`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.mensaje);
+                window.close();
+            })
+            .catch(error => {
+                alert('Error al cancelar el pedido');
+            });
+        }
+
+        if (pedidoId) {
+            cargarInfo();
+            cargarDetalles();
+        } else {
+            document.getElementById('info').innerHTML = '<b>Error: No se encontró el pedido.</b>';
+        }
+    </script>
+</body>
+</html> 

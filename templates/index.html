@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pizarra de Pedidos - Supermercado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+        }
+        .left-panel {
+            flex: 2;
+            padding: 30px 20px 20px 40px;
+            overflow-y: auto;
+        }
+        .right-panel {
+            flex: 1;
+            background: #fff;
+            border-left: 1px solid #ddd;
+            padding: 30px 20px 20px 20px;
+            min-width: 300px;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.03);
+        }
+        .pedidos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        .pedido-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            padding: 24px 18px 18px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-height: 180px;
+        }
+        .pedido-card h3 {
+            margin: 0 0 8px 0;
+        }
+        .pedido-card p {
+            margin: 4px 0;
+        }
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px 0 0;
+        }
+        .btn-ver {
+            background-color: #2196F3;
+            color: white;
+        }
+        .btn-finalizar {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .stock-list {
+            margin-top: 10px;
+        }
+        .stock-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .stock-bajo {
+            color: red;
+        }
+        @media (max-width: 900px) {
+            .container { flex-direction: column; }
+            .right-panel { min-width: unset; border-left: none; border-top: 1px solid #ddd; }
+        }
+        .stress-panel {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        .btn-stress {
+            background-color: #ff9800;
+            color: white;
+            margin-bottom: 8px;
+        }
+        .btn-danger {
+            background-color: #f44336;
+            color: white;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <h1>Pedidos Pendientes</h1>
+            <div class="pedidos-grid" id="pedidos"></div>
+        </div>
+        <div class="right-panel">
+            <h2>Stock disponible</h2>
+            <div class="stock-list" id="stock"></div>
+            <div class="stress-panel">
+                <h3>Test de Estrés</h3>
+                <button class="btn btn-stress" onclick="crearPedidosStress(1)">Agregar 1 pedido</button>
+                <button class="btn btn-stress" onclick="crearPedidosStress(5)">Agregar 5 pedidos</button>
+                <button class="btn btn-stress" onclick="crearPedidosStress(20)">Agregar 20 pedidos</button>
+                <button class="btn btn-stress" onclick="crearPedidosStress(50)">Agregar 50 pedidos</button>
+                <button class="btn btn-stress" onclick="crearPedidosStress(100)">Agregar 100 pedidos</button>
+                <button class="btn btn-danger" onclick="resetPedidos()">Resetear todos los pedidos</button>
+                <button class="btn btn-danger" onclick="resetTodo()">Resetear TODO (vaciar pedidos y stock alto)</button>
+                <div id="stress-result" style="margin-top:20px;"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function cargarPedidos() {
+            fetch('http://localhost:5000/pedidos')
+                .then(response => response.json())
+                .then(pedidos => {
+                    const div = document.getElementById('pedidos');
+                    div.innerHTML = '';
+                    pedidos.forEach(pedido => {
+                        div.innerHTML += `
+                            <div class="pedido-card">
+                                <h3>Pedido #${pedido.id}</h3>
+                                <p>Fecha: ${pedido.fecha_emision}</p>
+                                <p><b>Cantidad total de productos:</b> ${pedido.total_cantidad}</p>
+                                <button class="btn btn-ver" onclick="window.open('/pedido/${pedido.id}', '_blank')">
+                                    Ver Detalles
+                                </button>
+                                ${pedido.procesado ? `<button class=\"btn btn-finalizar\" onclick=\"finalizarPedido(${pedido.id})\">Finalizar</button>` : ''}
+                            </div>
+                        `;
+                    });
+                });
+        }
+
+        function cargarStock() {
+            fetch('http://localhost:5000/stock')
+                .then(response => response.json())
+                .then(data => {
+                    const div = document.getElementById('stock');
+                    div.innerHTML = '';
+                    data.stock.forEach(producto => {
+                        const stockClass = producto.stock < 10 ? 'stock-bajo' : '';
+                        div.innerHTML += `
+                            <div class="stock-item">
+                                <span>${producto.nombre}</span>
+                                <span class="${stockClass}">${producto.stock}</span>
+                            </div>
+                        `;
+                    });
+                });
+        }
+
+        function finalizarPedido(pedidoId) {
+            if (!confirm('¿Está seguro de finalizar este pedido?')) return;
+            fetch(`http://localhost:5000/pedidos/${pedidoId}/finalizar`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.mensaje);
+                cargarPedidos();
+            })
+            .catch(error => {
+                alert('Error al finalizar el pedido');
+            });
+        }
+
+        function resetPedidos() {
+            if (!confirm('¿Seguro que quieres borrar todos los pedidos?')) return;
+            fetch('http://localhost:5000/reset_pedidos', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.mensaje);
+                    cargarPedidos();
+                    cargarStock();
+                    document.getElementById('stress-result').innerHTML = '';
+                })
+                .catch(error => {
+                    alert('Error al resetear pedidos');
+                });
+        }
+
+        function resetTodo() {
+            if (!confirm('¿Seguro que quieres borrar todo y reiniciar el stock?')) return;
+            fetch('http://localhost:5000/reset_todo', {method: 'POST'})
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.mensaje);
+                    cargarPedidos();
+                    cargarStock();
+                    document.getElementById('stress-result').innerHTML = '';
+                })
+                .catch(error => {
+                    alert('Error al resetear todo');
+                });
+        }
+
+        async function crearPedidosStress(n) {
+            let creacionOk = 0, creacionTotal = 0;
+            let procesadoOk = 0, procesadoTotal = 0;
+            let canceladoOk = 0, canceladoTotal = 0;
+            let pedidosIds = [];
+            let resultDiv = document.getElementById('stress-result');
+            // 1. Crear pedidos
+            for (let i = 0; i < n; i++) {
+                resultDiv.innerHTML = `Creando pedido ${i+1} de ${n}...`;
+                // Generar productos y cantidades aleatorias
+                let numProductos = Math.floor(Math.random() * 3) + 1; // 1 a 3 productos
+                let usados = new Set();
+                let productos = [];
+                for (let j = 1; j <= numProductos; j++) {
+                    let producto_id;
+                    do {
+                        producto_id = Math.floor(Math.random() * 6) + 1; // IDs del 1 al 6
+                    } while (usados.has(producto_id));
+                    usados.add(producto_id);
+                    let cantidad = Math.floor(Math.random() * 5) + 1; // Cantidad 1 a 5
+                    productos.push({producto_id, cantidad});
+                }
+                const res = await fetch('http://localhost:5000/pedidos', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({productos})
+                });
+                creacionTotal++;
+                if (res.ok) {
+                    creacionOk++;
+                    try {
+                        const data = await res.json();
+                        if (data.id) pedidosIds.push(data.id);
+                    } catch {}
+                }
+            }
+            // Esperar a que los pedidos estén en la base
+            resultDiv.innerHTML = `Procesando/cancelando pedidos...`;
+            await new Promise(r => setTimeout(r, 1000));
+            // 2. Para cada pedido, procesar o cancelar aleatoriamente
+            for (let idx = 0; idx < pedidosIds.length; idx++) {
+                let id = pedidosIds[idx];
+                resultDiv.innerHTML = `Procesando/cancelando pedido ${idx+1} de ${pedidosIds.length}...`;
+                if (Math.random() < 0.5) {
+                    // Procesar todos los productos del pedido
+                    const detallesRes = await fetch(`http://localhost:5000/pedidos/${id}/detalles`);
+                    if (detallesRes.ok) {
+                        const detalles = await detallesRes.json();
+                        for (let d of detalles.detalles) {
+                            const resProc = await fetch(`http://localhost:5000/pedidos/${id}/procesar`, {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({
+                                    pedido_id: id,
+                                    detalle_id: d.id,
+                                    procesar: true
+                                })
+                            });
+                            procesadoTotal++;
+                            if (resProc.ok) procesadoOk++;
+                        }
+                    }
+                } else {
+                    // Cancelar el pedido
+                    const resCanc = await fetch(`http://localhost:5000/pedidos/${id}/cancelar`, {
+                        method: 'POST'
+                    });
+                    canceladoTotal++;
+                    if (resCanc.ok) canceladoOk++;
+                }
+            }
+            // Mostrar resultados
+            let html = `<b>Resultados del test:</b><br>`;
+            html += `Creación: ${(creacionOk/creacionTotal*100).toFixed(1)}% (${creacionOk}/${creacionTotal})<br>`;
+            html += `Procesado: ${procesadoTotal ? ((procesadoOk/procesadoTotal*100).toFixed(1) + `% (${procesadoOk}/${procesadoTotal})`) : '0% (0/0)'}<br>`;
+            html += `Cancelado: ${canceladoTotal ? ((canceladoOk/canceladoTotal*100).toFixed(1) + `% (${canceladoOk}/${canceladoTotal})`) : '0% (0/0)'}<br>`;
+            resultDiv.innerHTML = html;
+            cargarPedidos();
+            cargarStock();
+        }
+
+        cargarPedidos();
+        cargarStock();
+        setInterval(cargarPedidos, 5000);
+        setInterval(cargarStock, 5000);
+    </script>
+</body>
+</html> 
